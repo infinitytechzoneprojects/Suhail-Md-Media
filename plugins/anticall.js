@@ -1,30 +1,26 @@
-smd({ call: 'anticall' }, async (callEvent) => {
+// AUTOCALL BLOCKER – ALWAYS ACTIVE
+// BUILT FOR INFINITY TECH ZONE 🔥
+// NO TURN OFF OPTION – PERMANENT PROTECTION
+
+let { smd } = require('../lib/')
+
+const antiCallMessage = 
+"```🚫 Call Blocked\n\n🤖 This is Infinity Tech Zone Bot.\n📞 Sorry, calls are not supported.\n💬 Please send a text message instead.\n\n- Infinity Tech Zone```"
+
+smd({
+  call: 'anticall'
+}, async (callEvent) => {
   try {
-    if (!bots) bots = await bot_.findOne({ id: 'bot_' + callEvent.user });
+    // Skip if bot called itself
+    if (callEvent.fromMe) return
 
-    if (
-      callEvent.fromMe ||
-      !bots ||
-      !bots.anticall ||
-      bots.anticall === 'false'
-    ) return;
+    // Send auto-reply message to caller
+    await callEvent.send(antiCallMessage, {}, 'text', '', callEvent.user)
 
-    // Prepare allowed countries
-    if (!antiCallCountries || !antiCallCountries[0]) {
-      antiCallCountries = bots.anticall?.split(',') || [];
-      antiCallCountries = antiCallCountries.filter(cc => cc.trim() !== '');
-    }
+    // Instantly decline the call
+    await callEvent.decline()
 
-    let allBlocked = bots.anticall.toString().includes('all');
-    let isBlocked = allBlocked || antiCallCountries.some(cc =>
-      callEvent.from?.toString().startsWith(cc)
-    );
-
-    if (isBlocked || callEvent.isBot) {
-      await callEvent.send(antiCallMessage, {}, 'text', '', callEvent.user);
-      await callEvent.decline(); // Always decline call
-    }
-  } catch (e) {
-    console.error("Anti-call error:", e);
+  } catch (err) {
+    console.error("Infinity Tech Zone AntiCall Error:", err)
   }
-});
+})
